@@ -24,17 +24,15 @@
         edge2 (subtract-vectors v3 v1)]
     (normalize-vector (cross-product edge1 edge2))))
 
-(defn tetrahedron-mesh
+(defn custom-tetrahedron-mesh
   "Returns mesh data for a tetrahedron in a format compatible with Blender's Mesh.from_pydata().
+   Takes four 3D points as input to form the tetrahedron vertices.
    Returns a map containing :vertices, :faces, and :normals where:
    - :vertices is a sequence of [x y z] coordinates for each vertex
    - :faces is a sequence of vertex indices forming each triangular face
    - :normals is a sequence of [x y z] normal vectors for each vertex"
-  []
-  (let [vertices [[1.0 1.0 1.0]     ; vertex 0
-                  [-1.0 -1.0 1.0]    ; vertex 1
-                  [-1.0 1.0 -1.0]    ; vertex 2
-                  [1.0 -1.0 -1.0]]   ; vertex 3
+  [p1 p2 p3 p4]
+  (let [vertices [p1 p2 p3 p4]
         faces [[0 1 2]              ; face 0
                [0 1 3]              ; face 1
                [0 2 3]              ; face 2
@@ -48,5 +46,17 @@
     {:vertices vertices
      :faces faces
      :normals vertex-normals}))
+
+(defn tetrahedron-mesh
+  "Returns mesh data for a regular tetrahedron with predefined vertices.
+   Returns a map containing :vertices, :faces, and :normals where:
+   - :vertices is a sequence of [x y z] coordinates for each vertex
+   - :faces is a sequence of vertex indices forming each triangular face
+   - :normals is a sequence of [x y z] normal vectors for each vertex"
+  []
+  (custom-tetrahedron-mesh [1.0 1.0 1.0]     ; vertex 0
+                          [-1.0 -1.0 1.0]    ; vertex 1
+                          [-1.0 1.0 -1.0]    ; vertex 2
+                          [1.0 -1.0 -1.0]))  ; vertex 3
 
 
