@@ -14,6 +14,17 @@ def setup_scene():
     camera = bpy.context.active_object
     camera.rotation_euler = (math.pi/4, 0, math.pi/4)
     
+    # Create empty object as camera target
+    bpy.ops.object.empty_add(type='PLAIN_AXES', location=(0, 0, 0))
+    target = bpy.context.active_object
+    target.name = "CameraTarget"
+    
+    # Create camera constraint to track target
+    constraint = camera.constraints.new(type='TRACK_TO')
+    constraint.target = target
+    constraint.track_axis = 'TRACK_NEGATIVE_Z'
+    constraint.up_axis = 'UP_Y'
+    
     # Create light
     bpy.ops.object.light_add(type='SUN', location=(5, 5, 5))
     light = bpy.context.active_object
@@ -21,6 +32,8 @@ def setup_scene():
     
     # Set active camera
     bpy.context.scene.camera = camera
+    
+    return camera, target
 
 def create_mesh(mesh_data):
     # Create mesh
@@ -72,6 +85,29 @@ def setup_render():
             # If we can't access enum values, skip setting denoiser
             pass
 
+def render_angles(camera, output_base, num_angles=8):
+    # Calculate angle step
+    angle_step = 2 * math.pi / num_angles
+    
+    # Get output path without extension
+    output_path = output_base.rsplit('.', 1)[0]
+    output_ext = output_base.rsplit('.', 1)[1]
+    
+    # Render from different angles
+    for i in range(num_angles):
+        angle = i * angle_step
+        # Update camera position
+        radius = math.sqrt(50)  # Distance from origin (5^2 + 5^2)
+        camera.location.x = radius * math.cos(angle)
+        camera.location.y = radius * math.sin(angle)
+        camera.location.z = 5  # Keep constant height
+        
+        # Set output path for this angle
+        bpy.context.scene.render.filepath = f"{output_path}_{i:02d}.{output_ext}"
+        
+        # Render
+        bpy.ops.render.render(write_still=True)
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: blender -b -P render_mesh.py -- <input_json> <output_png>")
@@ -87,7 +123,7 @@ def main():
         mesh_data = json.load(f)
     
     # Setup scene
-    setup_scene()
+    camera, target = setup_scene()
     
     # Create mesh
     obj = create_mesh(mesh_data)
@@ -95,12 +131,11 @@ def main():
     # Setup render settings
     setup_render()
     
-    # Set output path
-    bpy.context.scene.render.filepath = output_png
-    
-    # Render
-    bpy.ops.render.render(write_still=True)
+    # Render from multiple angles
+    render_angles(camera, output_png)
 
 if __name__ == "__main__":
     main()
+
+
 
