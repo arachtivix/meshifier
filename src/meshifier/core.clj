@@ -1,5 +1,6 @@
 (ns meshifier.core
-  (:gen-class))
+  (:gen-class)
+  (:require [clojure.data.json :as json]))
 
 
 
@@ -70,7 +71,9 @@
                           [-1.0 -1.0 1.0]    ; vertex 1
                           [-1.0 1.0 -1.0]    ; vertex 2
                           [1.0 -1.0 -1.0]))  ; vertex 3
-
+(defn -main [& args]
+  (let [mesh-data (tetrahedron-mesh)]
+    (println (json/write-str mesh-data))))
 
 
 

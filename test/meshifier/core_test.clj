@@ -1,6 +1,7 @@
 (ns meshifier.core-test
   (:require [clojure.test :refer :all]
-            [meshifier.core :refer :all]))
+            [meshifier.core :refer :all]
+            [clojure.data.json :as json]))
 
 (deftest point-in-tetrahedron-test
   (testing "point-in-tetrahedron? with regular tetrahedron"
@@ -62,6 +63,19 @@
       (is (every? #(= 3 (count %)) (:faces mesh)))
       (is (every? number? (flatten (:vertices mesh))))
       (is (every? int? (flatten (:faces mesh)))))))
+
+(deftest json-serialization-test
+  (testing "mesh data can be serialized to JSON"
+    (let [mesh (tetrahedron-mesh)
+          json-str (json/write-str mesh)
+          parsed (json/read-str json-str)]
+      (is (string? json-str) "JSON serialization should produce a string")
+      (is (map? parsed) "Parsed JSON should be a map")
+      (is (= (count (:vertices mesh)) (count (get parsed "vertices")))
+          "Vertices count should match after serialization/deserialization")
+      (is (= (count (:faces mesh)) (count (get parsed "faces")))
+          "Faces count should match after serialization/deserialization"))))
+
 
 
 
