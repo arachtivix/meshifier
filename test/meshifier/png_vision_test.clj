@@ -28,23 +28,27 @@
         (.delete file)))))
 
 (deftest single-color-test
-  (testing "Single color image returns true"
-    (let [filename "test-single-color.png"]
-      (create-test-image 10 10 (fn [_ _] (Color. 255 0 0)) filename)
-      (is (true? (single-color? filename)))
-      (cleanup-test-files filename)))
-  
-  (testing "Multiple color image returns false"
-    (let [filename "test-multi-color.png"]
+  (let [single-color-file "test-single-color.png"
+        multi-color-file "test-multi-color.png"]
+    
+    ; Clean up any existing test files before running tests
+    (cleanup-test-files single-color-file multi-color-file)
+    
+    (testing "Single color image returns true"
+      (println "Creating test file:" (.getAbsolutePath (File. single-color-file)))
+      (create-test-image 10 10 (fn [_ _] (Color. 255 0 0)) single-color-file)
+      (is (true? (single-color? single-color-file))))
+    
+    (testing "Multiple color image returns false"
+      (println "Creating test file:" (.getAbsolutePath (File. multi-color-file)))
       (create-test-image 10 10 
                         (fn [x y] 
                           (if (< x 5)
                             (Color. 255 0 0)
                             (Color. 0 255 0)))
-                        filename)
-      (is (false? (single-color? filename)))
-      (cleanup-test-files filename)))
-  
-  (testing "Non-existent file throws exception"
-    (is (thrown? java.io.IOException
-                 (single-color? "non-existent.png")))))
+                        multi-color-file)
+      (is (false? (single-color? multi-color-file))))
+    
+    (testing "Non-existent file throws exception"
+      (is (thrown? java.io.IOException
+                   (single-color? "non-existent.png"))))))
