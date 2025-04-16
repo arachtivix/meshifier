@@ -76,7 +76,3 @@
       (is (= (count (:faces mesh)) (count (get parsed "faces")))
           "Faces count should match after serialization/deserialization"))))
 
-
-
-
-

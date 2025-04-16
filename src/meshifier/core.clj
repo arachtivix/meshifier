@@ -1,6 +1,7 @@
 (ns meshifier.core
   (:gen-class)
-  (:require [clojure.data.json :as json]))
+  (:require [clojure.data.json :as json]
+            [meshifier.render :as render]))
 
 
 
@@ -72,10 +73,18 @@
                           [-1.0 1.0 -1.0]    ; vertex 2
                           [1.0 -1.0 -1.0]))  ; vertex 3
 (defn -main [& args]
-  (let [mesh-data (tetrahedron-mesh)]
-    (println (json/write-str mesh-data))))
-
-
-
-
-
+  (let [mesh-data (tetrahedron-mesh)
+        mesh-json (json/write-str mesh-data)
+        output-prefix (if (seq args)
+                       (first args)
+                       "output/render")]
+    (if (= output-prefix "-")
+      ; If output is "-", just print to stdout (original behavior)
+      (println mesh-json)
+      ; Otherwise render the mesh
+      (let [result (render/render-mesh mesh-json output-prefix)]
+        (if (:success result)
+          (println (:message result))
+          (do
+            (println "Error:" (:message result))
+            (System/exit 1)))))))

@@ -7,8 +7,10 @@
                  [org.clojure/data.json "2.4.0"]]
   :main ^:skip-aot meshifier.core
   :target-path "target/%s"
+  :resource-paths ["resources"]
   :profiles {:uberjar {:aot :all
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})
+
 
 
 
