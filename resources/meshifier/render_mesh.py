@@ -85,28 +85,47 @@ def setup_render():
             # If we can't access enum values, skip setting denoiser
             pass
 
-def render_angles(camera, output_base, num_angles=8):
-    # Calculate angle step
-    angle_step = 2 * math.pi / num_angles
+def render_angles(camera, output_base, angles=None):
+    if angles is None:
+        # Default behavior: 2 angles - front and side view
+        angles = [0, math.pi/2]
+    
+    # Validate angles
+    if not isinstance(angles, (list, tuple)):
+        print(f"Warning: Invalid angles format {type(angles)}, using default angles")
+        angles = [0, math.pi/2]
+    
+    try:
+        angles = [float(angle) for angle in angles]
+    except (ValueError, TypeError):
+        print(f"Warning: Invalid angle values in {angles}, using default angles")
+        angles = [0, math.pi/2]
     
     # Get output path without extension
-    output_path = output_base.rsplit('.', 1)[0]
-    output_ext = output_base.rsplit('.', 1)[1]
+    try:
+        output_path, output_ext = output_base.rsplit('.', 1)
+    except ValueError:
+        output_path = output_base
+        output_ext = "png"
     
-    # Render from different angles
-    for i in range(num_angles):
-        angle = i * angle_step
+    # Render from specified angles
+    for i, angle in enumerate(angles):
         # Update camera position
         radius = math.sqrt(50)  # Distance from origin (5^2 + 5^2)
         camera.location.x = radius * math.cos(angle)
         camera.location.y = radius * math.sin(angle)
         camera.location.z = 5  # Keep constant height
         
+        # Look at target
+        camera.rotation_euler = (math.pi/4, 0, angle + math.pi/4)
+        
         # Set output path for this angle
         bpy.context.scene.render.filepath = f"{output_path}_{i:02d}.{output_ext}"
         
         # Render
         bpy.ops.render.render(write_still=True)
+        
+        print(f"Rendered view at angle {angle:.2f} radians ({math.degrees(angle):.1f}°)")
 
 def main():
     if len(sys.argv) < 2:
@@ -120,7 +139,11 @@ def main():
     
     # Read mesh data
     with open(input_json, 'r') as f:
-        mesh_data = json.load(f)
+        data = json.load(f)
+    
+    # Extract mesh data and angles (if provided)
+    mesh_data = data if "vertices" in data else data["mesh"]
+    angles = data.get("angles", None)  # Get angles if provided, None otherwise
     
     # Setup scene
     camera, target = setup_scene()
@@ -132,7 +155,9 @@ def main():
     setup_render()
     
     # Render from multiple angles
-    render_angles(camera, output_png)
+    render_angles(camera, output_png, angles)
 
 if __name__ == "__main__":
     main()
+
+
