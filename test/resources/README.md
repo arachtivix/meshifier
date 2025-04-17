@@ -1,0 +1,1 @@
+This directory contains test resources and test output files.

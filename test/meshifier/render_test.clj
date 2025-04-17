@@ -3,9 +3,17 @@
             [meshifier.render :as render]
             [clojure.java.io :as io]))
 
+(defn ensure-test-output-dir
+  "Ensures the test output directory exists"
+  []
+  (let [dir (io/file "test/resources/output")]
+    (when-not (.exists dir)
+      (.mkdirs dir))))
+
 (deftest ensure-directory-test
   (testing "ensure-directory creates directory"
-    (let [test-dir (str (System/getProperty "java.io.tmpdir") "/test-dir")]
+    (ensure-test-output-dir)
+    (let [test-dir "test/resources/output/test-dir"]
       ; Clean up any existing directory before test
       (when (.exists (io/file test-dir))
         (io/delete-file test-dir))
@@ -24,10 +32,9 @@
 
 (deftest render-mesh-test
   (testing "render-mesh with invalid data returns error"
-    (let [output-path "test-output"
+    (ensure-test-output-dir)
+    (let [output-path "test/resources/output/test-render"
           _ (println "Testing render with output path:" output-path)
           result (render/render-mesh "invalid json" output-path)]
       (is (false? (:success result)))
       (is (string? (:message result))))))
-
-

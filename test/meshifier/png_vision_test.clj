@@ -1,11 +1,18 @@
 (ns meshifier.png-vision-test
   (:require [clojure.test :refer :all]
-            [meshifier.png-vision :refer [single-color?]])
+            [meshifier.png-vision :refer [single-color?]]
+            [clojure.java.io :as io])
   (:import [javax.imageio ImageIO]
            [java.awt.image BufferedImage]
            [java.awt Color]
            [java.io File]))
 
+(defn ensure-test-output-dir
+  "Ensures the test output directory exists"
+  []
+  (let [dir (io/file "test/resources/output")]
+    (when-not (.exists dir)
+      (.mkdirs dir))))
 (defn create-test-image
   "Creates a test PNG image with specified dimensions and colors"
   [width height color-fn filename]
@@ -28,8 +35,11 @@
         (.delete file)))))
 
 (deftest single-color-test
-  (let [single-color-file "test-single-color.png"
-        multi-color-file "test-multi-color.png"]
+  (let [single-color-file "test/resources/output/test-single-color.png"
+        multi-color-file "test/resources/output/test-multi-color.png"]
+    
+    ; Ensure test output directory exists
+    (ensure-test-output-dir)
     
     ; Clean up any existing test files before running tests
     (cleanup-test-files single-color-file multi-color-file)
@@ -52,3 +62,7 @@
     (testing "Non-existent file throws exception"
       (is (thrown? java.io.IOException
                    (single-color? "non-existent.png"))))))
+
+
+
+

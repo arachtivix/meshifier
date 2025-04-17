@@ -12,4 +12,6 @@ pom.xml.asc
 .hgignore
 .hg/
 .clj-kondo/
-*.png
+# Ignore test output files but keep the directory structure
+test/resources/output/*.png
+
