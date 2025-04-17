@@ -64,6 +64,43 @@
       (is (every? number? (flatten (:vertices mesh))))
       (is (every? int? (flatten (:faces mesh)))))))
 
+(deftest joined-tetrahedrons-mesh-test
+  (testing "joined-tetrahedrons-mesh returns correct structure"
+    (let [mesh (joined-tetrahedrons-mesh)]
+      ; Test basic structure
+      (is (map? mesh))
+      (is (contains? mesh :vertices))
+      (is (contains? mesh :faces))
+      
+      ; Test counts
+      (is (= 5 (count (:vertices mesh))) "Should have 5 vertices (3 shared + 2 unique)")
+      (is (= 7 (count (:faces mesh))) "Should have 7 faces (4 from first tetrahedron + 3 from second)")
+      
+      ; Test vertex and face structure
+      (is (every? #(= 3 (count %)) (:vertices mesh)) "Each vertex should have 3 coordinates")
+      (is (every? #(= 3 (count %)) (:faces mesh)) "Each face should have 3 vertices")
+      (is (every? number? (flatten (:vertices mesh))) "All vertex coordinates should be numbers")
+      (is (every? int? (flatten (:faces mesh))) "All face indices should be integers")
+      
+      ; Test vertex indices are valid
+      (is (every? #(every? (fn [idx] (< idx 5)) %) (:faces mesh))
+          "All face indices should be less than vertex count")
+      
+      ; Get the vertices for testing point locations
+      (let [vertices (:vertices mesh)
+            p1 (nth vertices 0)  ; shared vertices
+            p2 (nth vertices 1)
+            p3 (nth vertices 2)
+            p4 (nth vertices 3)  ; unique vertex of first tetrahedron
+            p5 (nth vertices 4)] ; unique vertex of second tetrahedron
+        
+        ; Test that unique vertices lie outside the opposite tetrahedron
+        (is (not (point-in-tetrahedron? p4 p1 p2 p3 p5))
+            "First tetrahedron's unique vertex should be outside second tetrahedron")
+        (is (not (point-in-tetrahedron? p5 p1 p2 p3 p4))
+            "Second tetrahedron's unique vertex should be outside first tetrahedron")))))
+
+
 (deftest json-serialization-test
   (testing "mesh data can be serialized to JSON"
     (let [mesh (tetrahedron-mesh)
@@ -75,4 +112,5 @@
           "Vertices count should match after serialization/deserialization")
       (is (= (count (:faces mesh)) (count (get parsed "faces")))
           "Faces count should match after serialization/deserialization"))))
+
 

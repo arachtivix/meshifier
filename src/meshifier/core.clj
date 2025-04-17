@@ -72,6 +72,45 @@
                           [-1.0 -1.0 1.0]    ; vertex 1
                           [-1.0 1.0 -1.0]    ; vertex 2
                           [1.0 -1.0 -1.0]))  ; vertex 3
+(defn joined-tetrahedrons-mesh
+  "Returns mesh data for two tetrahedrons joined by one face.
+   The remaining point of each tetrahedron lies outside of the other tetrahedron.
+   Returns a map containing :vertices and :faces."
+  []
+  (let [; First tetrahedron vertices
+        p1 [1.0 1.0 1.0]      ; shared vertex 1
+        p2 [-1.0 -1.0 1.0]    ; shared vertex 2
+        p3 [-1.0 1.0 -1.0]    ; shared vertex 3
+        p4 [1.0 -1.0 -2.0]    ; unique vertex for first tetrahedron
+        
+        ; Second tetrahedron's unique vertex (placed above the shared face)
+        p5 [-0.33 0.33 2.0]   ; unique vertex for second tetrahedron
+        
+        ; Combined vertices
+        vertices [p1 p2 p3 p4 p5]
+        
+        ; Faces for first tetrahedron (0-based indices)
+        faces1 [[0 1 2]    ; shared face
+                [0 1 3]    ; unique faces for first tetrahedron
+                [0 2 3]
+                [1 2 3]]
+        
+        ; Faces for second tetrahedron
+        faces2 [[0 1 4]    ; faces using the second tetrahedron's unique vertex
+                [0 2 4]
+                [1 2 4]]]
+        
+    ; Verify that p4 is outside the second tetrahedron
+    (assert (not (point-in-tetrahedron? p4 p1 p2 p3 p5))
+            "First tetrahedron's unique vertex must be outside second tetrahedron")
+    
+    ; Verify that p5 is outside the first tetrahedron
+    (assert (not (point-in-tetrahedron? p5 p1 p2 p3 p4))
+            "Second tetrahedron's unique vertex must be outside first tetrahedron")
+    
+    {:vertices vertices
+     :faces (concat faces1 faces2)}))
+
 (defn -main [& args]
   (let [mesh-data (tetrahedron-mesh)
         mesh-json (json/write-str mesh-data)
@@ -88,3 +127,4 @@
           (do
             (println "Error:" (:message result))
             (System/exit 1)))))))
+
