@@ -197,6 +197,56 @@
         (is (< y-min 1.0) "Chair should extend down for legs")
         (is (> (- x-max x-min) 1.0) "Chair should be wide enough for seat")
         (is (> (- z-max z-min) 1.0) "Chair should be deep enough for seat")))))
+(deftest generate-cat-mesh-test
+  (testing "generate-cat-mesh returns correct structure"
+    (let [mesh (generate-cat-mesh)]
+      ; Test basic structure
+      (is (map? mesh))
+      (is (contains? mesh :vertices))
+      (is (contains? mesh :faces))
+      
+      ; Test vertex structure
+      (is (every? vector? (:vertices mesh)) "Vertices should be vectors")
+      (is (every? #(= 3 (count %)) (:vertices mesh)) "Vertices should have 3 coordinates")
+      (is (every? number? (flatten (:vertices mesh))) "Vertex coordinates should be numbers")
+      
+      ; Test face structure
+      (is (every? vector? (:faces mesh)) "Faces should be vectors")
+      (is (every? #(= 3 (count %)) (:faces mesh)) "Faces should have 3 vertices")
+      (is (every? #(every? (fn [idx] (< idx (count (:vertices mesh)))) %) (:faces mesh))
+          "Face indices should be less than vertex count")
+      
+      ; Test component counts
+      (let [vertex-count (count (:vertices mesh))
+            face-count (count (:faces mesh))]
+        ; Each cuboid has 8 vertices and 12 faces
+        ; Cat has 9 components (body, head, 2 ears, tail, 4 legs)
+        (is (= (* 8 9) vertex-count) "Should have correct number of vertices")
+        (is (= (* 12 9) face-count) "Should have correct number of faces"))
+      
+      ; Test cat dimensions and component positions
+      (let [vertices (:vertices mesh)
+            x-coords (map first vertices)
+            y-coords (map second vertices)
+            z-coords (map last vertices)
+            x-min (apply min x-coords)
+            x-max (apply max x-coords)
+            y-min (apply min y-coords)
+            y-max (apply max y-coords)
+            z-min (apply min z-coords)
+            z-max (apply max z-coords)]
+        
+        ; Test overall dimensions are reasonable
+        (is (> (- x-max x-min) 0) "Cat should have positive width")
+        (is (> (- y-max y-min) 0) "Cat should have positive height")
+        (is (> (- z-max z-min) 0) "Cat should have positive depth")
+        
+        ; Test relative positions
+        (is (> y-max 2.0) "Cat should be tall enough for ears")
+        (is (< y-min 1.0) "Cat should extend down for legs")
+        (is (> (- x-max x-min) 1.0) "Cat should be wide enough for body")
+        (is (> (- z-max z-min) 2.0) "Cat should be long enough for body and tail")))))
+
 (deftest json-serialization-test
   (testing "mesh data can be serialized to JSON"
     (let [mesh (tetrahedron-mesh)
@@ -218,7 +268,20 @@
       (is (= (count (:vertices mesh)) (count (get parsed "vertices")))
           "Vertices count should match after serialization/deserialization")
       (is (= (count (:faces mesh)) (count (get parsed "faces")))
+          "Faces count should match after serialization/deserialization")))
+  
+  (testing "cat mesh data can be serialized to JSON"
+    (let [mesh (generate-cat-mesh)
+          json-str (json/write-str mesh)
+          parsed (json/read-str json-str)]
+      (is (string? json-str) "JSON serialization should produce a string")
+      (is (map? parsed) "Parsed JSON should be a map")
+      (is (= (count (:vertices mesh)) (count (get parsed "vertices")))
+          "Vertices count should match after serialization/deserialization")
+      (is (= (count (:faces mesh)) (count (get parsed "faces")))
           "Faces count should match after serialization/deserialization"))))
+
+
 
 
 

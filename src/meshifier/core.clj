@@ -141,6 +141,100 @@
     {:vertices vertices
      :faces faces}))
 
+(defn generate-cat-mesh
+  "Returns mesh data for a stylized cat.
+   Returns a map containing :vertices and :faces for the complete cat model."
+  []
+  (let [; Define cat dimensions
+        ; Body
+        body-width 1.5
+        body-height 1.0
+        body-depth 2.5
+        body-pos [0 1.0 0]
+        
+        ; Head
+        head-width 1.0
+        head-height 1.0
+        head-depth 1.0
+        head-pos [0 1.5 1.5]
+        
+        ; Ears (triangular prisms approximated with small cuboids)
+        ear-width 0.2
+        ear-height 0.4
+        ear-depth 0.2
+        ear-spacing 0.4
+        left-ear-pos [(- ear-spacing) 2.2 1.5]
+        right-ear-pos [ear-spacing 2.2 1.5]
+        
+        ; Tail
+        tail-width 0.2
+        tail-height 0.2
+        tail-depth 1.5
+        tail-pos [0 1.5 -1.5]
+        
+        ; Legs
+        leg-width 0.2
+        leg-height 0.8
+        leg-depth 0.2
+        leg-offset-x 0.5
+        leg-offset-z 0.8
+        leg-pos-y 0.4
+        
+        ; Generate components
+        body (generate-cuboid-mesh body-width body-height body-depth body-pos)
+        head (generate-cuboid-mesh head-width head-height head-depth head-pos)
+        left-ear (generate-cuboid-mesh ear-width ear-height ear-depth left-ear-pos)
+        right-ear (generate-cuboid-mesh ear-width ear-height ear-depth right-ear-pos)
+        tail (generate-cuboid-mesh tail-width tail-height tail-depth tail-pos)
+        front-left-leg (generate-cuboid-mesh leg-width leg-height leg-depth [(- leg-offset-x) leg-pos-y leg-offset-z])
+        front-right-leg (generate-cuboid-mesh leg-width leg-height leg-depth [leg-offset-x leg-pos-y leg-offset-z])
+        back-left-leg (generate-cuboid-mesh leg-width leg-height leg-depth [(- leg-offset-x) leg-pos-y (- leg-offset-z)])
+        back-right-leg (generate-cuboid-mesh leg-width leg-height leg-depth [leg-offset-x leg-pos-y (- leg-offset-z)])
+        
+        ; Combine all vertices
+        all-vertices (vec (concat (:vertices body)
+                                (:vertices head)
+                                (:vertices left-ear)
+                                (:vertices right-ear)
+                                (:vertices tail)
+                                (:vertices front-left-leg)
+                                (:vertices front-right-leg)
+                                (:vertices back-left-leg)
+                                (:vertices back-right-leg)))
+        
+        ; Calculate vertex count offsets
+        body-vertex-count (count (:vertices body))
+        head-vertex-count (count (:vertices head))
+        ear-vertex-count (count (:vertices left-ear))
+        tail-vertex-count (count (:vertices tail))
+        leg-vertex-count (count (:vertices front-left-leg))
+        
+        head-offset body-vertex-count
+        left-ear-offset (+ head-offset head-vertex-count)
+        right-ear-offset (+ left-ear-offset ear-vertex-count)
+        tail-offset (+ right-ear-offset ear-vertex-count)
+        front-left-leg-offset (+ tail-offset tail-vertex-count)
+        front-right-leg-offset (+ front-left-leg-offset leg-vertex-count)
+        back-left-leg-offset (+ front-right-leg-offset leg-vertex-count)
+        back-right-leg-offset (+ back-left-leg-offset leg-vertex-count)
+        
+        offset-faces (fn [faces offset]
+                      (map #(mapv (fn [idx] (+ idx offset)) %) faces))
+        
+        ; Combine all faces with proper offsets
+        all-faces (vec (concat (:faces body)
+                             (offset-faces (:faces head) head-offset)
+                             (offset-faces (:faces left-ear) left-ear-offset)
+                             (offset-faces (:faces right-ear) right-ear-offset)
+                             (offset-faces (:faces tail) tail-offset)
+                             (offset-faces (:faces front-left-leg) front-left-leg-offset)
+                             (offset-faces (:faces front-right-leg) front-right-leg-offset)
+                             (offset-faces (:faces back-left-leg) back-left-leg-offset)
+                             (offset-faces (:faces back-right-leg) back-right-leg-offset)))]
+    
+    {:vertices all-vertices
+     :faces all-faces}))
+
 (defn generate-chair-mesh
   "Returns mesh data for a simple chair.
    Returns a map containing :vertices and :faces for the complete chair."
@@ -213,7 +307,10 @@
                          :generator joined-tetrahedrons-mesh}
    "chair" {:name "Simple Chair"
             :description "A simple chair with seat, backrest and four legs"
-            :generator generate-chair-mesh}})
+            :generator generate-chair-mesh}
+   "cat" {:name "Stylized Cat"
+          :description "A stylized cat model with body, head, ears, tail, and legs"
+          :generator generate-cat-mesh}})
 
 (defn list-shapes
   "Display available shapes with their descriptions"
@@ -273,6 +370,8 @@
             (recur))))
       
       (println "\nGoodbye!"))))
+
+
 
 
 
