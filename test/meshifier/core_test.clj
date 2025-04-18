@@ -101,6 +101,102 @@
             "Second tetrahedron's unique vertex should be outside first tetrahedron")))))
 
 
+(deftest generate-cuboid-mesh-test
+  (testing "generate-cuboid-mesh returns correct structure"
+    (let [width 2.0
+          height 1.0
+          depth 3.0
+          position [1.0 2.0 3.0]
+          mesh (generate-cuboid-mesh width height depth position)]
+      
+      ; Test basic structure
+      (is (map? mesh))
+      (is (contains? mesh :vertices))
+      (is (contains? mesh :faces))
+      
+      ; Test counts
+      (is (= 8 (count (:vertices mesh))) "Should have 8 vertices")
+      (is (= 12 (count (:faces mesh))) "Should have 12 triangular faces")
+      
+      ; Test vertex structure
+      (is (every? vector? (:vertices mesh)) "Vertices should be vectors")
+      (is (every? #(= 3 (count %)) (:vertices mesh)) "Vertices should have 3 coordinates")
+      (is (every? number? (flatten (:vertices mesh))) "Vertex coordinates should be numbers")
+      
+      ; Test face structure
+      (is (every? vector? (:faces mesh)) "Faces should be vectors")
+      (is (every? #(= 3 (count %)) (:faces mesh)) "Faces should have 3 vertices")
+      (is (every? #(every? (fn [idx] (< idx 8)) %) (:faces mesh))
+          "Face indices should be less than vertex count")
+      
+      ; Test dimensions
+      (let [vertices (:vertices mesh)
+            x-coords (map first vertices)
+            y-coords (map second vertices)
+            z-coords (map last vertices)
+            x-min (apply min x-coords)
+            x-max (apply max x-coords)
+            y-min (apply min y-coords)
+            y-max (apply max y-coords)
+            z-min (apply min z-coords)
+            z-max (apply max z-coords)]
+        (is (= width (- x-max x-min)) "Width should match")
+        (is (= height (- y-max y-min)) "Height should match")
+        (is (= depth (- z-max z-min)) "Depth should match")
+        (is (= position [(/ (+ x-min x-max) 2)
+                        (/ (+ y-min y-max) 2)
+                        (/ (+ z-min z-max) 2)])
+            "Center position should match")))))
+
+(deftest generate-chair-mesh-test
+  (testing "generate-chair-mesh returns correct structure"
+    (let [mesh (generate-chair-mesh)]
+      ; Test basic structure
+      (is (map? mesh))
+      (is (contains? mesh :vertices))
+      (is (contains? mesh :faces))
+      
+      ; Test vertex structure
+      (is (every? vector? (:vertices mesh)) "Vertices should be vectors")
+      (is (every? #(= 3 (count %)) (:vertices mesh)) "Vertices should have 3 coordinates")
+      (is (every? number? (flatten (:vertices mesh))) "Vertex coordinates should be numbers")
+      
+      ; Test face structure
+      (is (every? vector? (:faces mesh)) "Faces should be vectors")
+      (is (every? #(= 3 (count %)) (:faces mesh)) "Faces should have 3 vertices")
+      (is (every? #(every? (fn [idx] (< idx (count (:vertices mesh)))) %) (:faces mesh))
+          "Face indices should be less than vertex count")
+      
+      ; Test component counts
+      (let [vertex-count (count (:vertices mesh))
+            face-count (count (:faces mesh))]
+        ; Each cuboid has 8 vertices and 12 faces
+        ; Chair has 6 components (seat, backrest, 4 legs)
+        (is (= (* 8 6) vertex-count) "Should have correct number of vertices")
+        (is (= (* 12 6) face-count) "Should have correct number of faces"))
+      
+      ; Test chair dimensions and component positions
+      (let [vertices (:vertices mesh)
+            x-coords (map first vertices)
+            y-coords (map second vertices)
+            z-coords (map last vertices)
+            x-min (apply min x-coords)
+            x-max (apply max x-coords)
+            y-min (apply min y-coords)
+            y-max (apply max y-coords)
+            z-min (apply min z-coords)
+            z-max (apply max z-coords)]
+        
+        ; Test overall dimensions are reasonable
+        (is (> (- x-max x-min) 0) "Chair should have positive width")
+        (is (> (- y-max y-min) 0) "Chair should have positive height")
+        (is (> (- z-max z-min) 0) "Chair should have positive depth")
+        
+        ; Test relative positions
+        (is (> y-max 2.0) "Chair should be tall enough for backrest")
+        (is (< y-min 1.0) "Chair should extend down for legs")
+        (is (> (- x-max x-min) 1.0) "Chair should be wide enough for seat")
+        (is (> (- z-max z-min) 1.0) "Chair should be deep enough for seat")))))
 (deftest json-serialization-test
   (testing "mesh data can be serialized to JSON"
     (let [mesh (tetrahedron-mesh)
@@ -111,6 +207,20 @@
       (is (= (count (:vertices mesh)) (count (get parsed "vertices")))
           "Vertices count should match after serialization/deserialization")
       (is (= (count (:faces mesh)) (count (get parsed "faces")))
+          "Faces count should match after serialization/deserialization")))
+  
+  (testing "chair mesh data can be serialized to JSON"
+    (let [mesh (generate-chair-mesh)
+          json-str (json/write-str mesh)
+          parsed (json/read-str json-str)]
+      (is (string? json-str) "JSON serialization should produce a string")
+      (is (map? parsed) "Parsed JSON should be a map")
+      (is (= (count (:vertices mesh)) (count (get parsed "vertices")))
+          "Vertices count should match after serialization/deserialization")
+      (is (= (count (:faces mesh)) (count (get parsed "faces")))
           "Faces count should match after serialization/deserialization"))))
+
+
+
 
 
