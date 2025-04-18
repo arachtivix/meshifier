@@ -24,6 +24,17 @@ This will:
 2. Create renders from multiple angles
 3. Save the renders as PNG files (output/render_00.png, output/render_01.png, etc.)
 
+### Render a Chair
+
+To render a 3D chair:
+
+```bash
+chmod +x render_chair.sh
+./render_chair.sh
+```
+
+This will generate a chair mesh and render it from multiple angles, saving the output as PNG files.
+
 ### Output JSON Only
 
 To output the mesh data as JSON without rendering:
@@ -48,7 +59,7 @@ lein uberjar
 
 ## Features
 
-- Generate 3D mesh data (currently supports tetrahedron)
+- Generate 3D mesh data (supports tetrahedron and chair)
 - Render meshes using Blender from multiple angles
 - Export mesh data in JSON format
 - Point-in-tetrahedron testing
