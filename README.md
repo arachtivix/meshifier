@@ -11,29 +11,37 @@ Clone this repository and ensure you have the following prerequisites installed:
 
 ## Usage
 
-### Basic Usage
+### Interactive Mode
 
-To generate mesh data and save renders:
+To use the interactive shape selection mode:
+
+```bash
+lein run -i
+```
+
+This will:
+1. Display a list of available shapes
+2. Let you choose a shape to render
+3. Generate the selected shape and create renders from multiple angles
+4. Save the renders as PNG files in the output directory
+
+Available shapes:
+- tetrahedron: A regular tetrahedron with four equilateral triangular faces
+- joined-tetrahedrons: Two tetrahedrons joined by one face
+- chair: A simple chair with seat, backrest and four legs
+
+### Direct Rendering
+
+To generate mesh data and save renders directly:
 
 ```bash
 lein run output/render
 ```
 
 This will:
-1. Generate a tetrahedron mesh
+1. Generate a chair mesh (default shape)
 2. Create renders from multiple angles
 3. Save the renders as PNG files (output/render_00.png, output/render_01.png, etc.)
-
-### Render a Chair
-
-To render a 3D chair:
-
-```bash
-chmod +x render_chair.sh
-./render_chair.sh
-```
-
-This will generate a chair mesh and render it from multiple angles, saving the output as PNG files.
 
 ### Output JSON Only
 
@@ -59,7 +67,11 @@ lein uberjar
 
 ## Features
 
-- Generate 3D mesh data (supports tetrahedron and chair)
+- Interactive shape selection mode
+- Generate 3D mesh data for multiple shapes:
+  - Regular tetrahedron
+  - Joined tetrahedrons
+  - Chair
 - Render meshes using Blender from multiple angles
 - Export mesh data in JSON format
 - Point-in-tetrahedron testing

@@ -1,6 +1,7 @@
 (ns meshifier.core
   (:gen-class)
   (:require [clojure.data.json :as json]
+            [clojure.string :as str]
             [meshifier.render :as render]))
 
 
@@ -203,22 +204,77 @@
     {:vertices all-vertices
      :faces all-faces}))
 
+(def available-shapes
+  {"tetrahedron" {:name "Regular Tetrahedron"
+                  :description "A regular tetrahedron with four equilateral triangular faces"
+                  :generator tetrahedron-mesh}
+   "joined-tetrahedrons" {:name "Joined Tetrahedrons"
+                         :description "Two tetrahedrons joined by one face"
+                         :generator joined-tetrahedrons-mesh}
+   "chair" {:name "Simple Chair"
+            :description "A simple chair with seat, backrest and four legs"
+            :generator generate-chair-mesh}})
+
+(defn list-shapes
+  "Display available shapes with their descriptions"
+  []
+  (println "\nAvailable shapes:")
+  (doseq [[id shape-info] available-shapes]
+    (println (format "\n%s - %s" id (:name shape-info)))
+    (println (format "  %s" (:description shape-info)))))
+
+(defn get-user-shape-choice
+  "Get user input for shape selection"
+  []
+  (println "\nEnter the shape ID to render (or 'q' to quit):")
+  (let [input (read-line)]
+    (when-not (= input "q")
+      (if-let [shape-info (get available-shapes input)]
+        shape-info
+        (do
+          (println "Invalid shape ID. Please try again.")
+          (recur))))))
+
 (defn -main [& args]
-  (let [mesh-data (generate-chair-mesh)
-        mesh-json (json/write-str mesh-data)
-        output-prefix (if (seq args)
-                       (first args)
-                       "output/render")]
-    (if (= output-prefix "-")
-      ; If output is "-", just print to stdout (original behavior)
-      (println mesh-json)
-      ; Otherwise render the mesh
-      (let [result (render/render-mesh mesh-json output-prefix)]
-        (if (:success result)
-          (println (:message result))
-          (do
-            (println "Error:" (:message result))
-            (System/exit 1)))))))
+  (if (and (seq args) (not= (first args) "-i"))
+    ; Original direct rendering mode with output path
+    (let [mesh-data (generate-chair-mesh)
+          mesh-json (json/write-str mesh-data)
+          output-prefix (first args)]
+      (if (= output-prefix "-")
+        ; If output is "-", just print to stdout (original behavior)
+        (println mesh-json)
+        ; Otherwise render the mesh
+        (let [result (render/render-mesh mesh-json output-prefix)]
+          (if (:success result)
+            (println (:message result))
+            (do
+              (println "Error:" (:message result))
+              (System/exit 1))))))
+    
+    ; Interactive mode
+    (do
+      (println "\nMeshifier - 3D Shape Generator")
+      (println "============================")
+      
+      (loop []
+        (list-shapes)
+        (when-let [shape-info (get-user-shape-choice)]
+          (let [mesh-data ((:generator shape-info))
+                mesh-json (json/write-str mesh-data)
+                output-prefix (str "output/" (str/lower-case (:name shape-info)))
+                _ (println "\nRendering" (:name shape-info) "...")
+                result (render/render-mesh mesh-json output-prefix)]
+            (if (:success result)
+              (println (:message result))
+              (println "Error:" (:message result)))
+            (println "\nPress Enter to continue...")
+            (read-line)
+            (recur))))
+      
+      (println "\nGoodbye!"))))
+
+
 
 
 
