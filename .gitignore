@@ -15,4 +15,4 @@ pom.xml.asc
 # Ignore test output files but keep the directory structure
 test/resources/output/*.png
 
-output/chair_render_00.png output/chair_render_01.png
+**/*.png
