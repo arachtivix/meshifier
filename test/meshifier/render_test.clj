@@ -63,6 +63,27 @@
       (is (not (single-color? output-file))
           "Rendered tetrahedron should not be a single color"))))
 
+(deftest render-joined-tetrahedrons-test
+  (testing "rendered joined tetrahedrons should not be a single color"
+    (ensure-test-output-dir)
+    (let [output-path "test/resources/output/joined-tetrahedrons-render"
+          mesh (core/joined-tetrahedrons-mesh)
+          mesh-json (json/write-str mesh)
+          render-result (render/render-mesh mesh-json output-path)
+          output-file (str output-path "_00.png")]
+      
+      ; Verify render was successful
+      (is (:success render-result)
+          (str "Render failed: " (:message render-result)))
+      
+      ; Verify output file exists
+      (is (.exists (io/file output-file))
+          "Render output file should exist")
+      
+      ; Verify the rendered image is not a single color
+      (is (not (single-color? output-file))
+          "Rendered joined tetrahedrons should not be a single color"))))
+
 (deftest render-mesh-with-angles-test
   (testing "render-mesh with custom angles"
     (ensure-test-output-dir)
@@ -134,5 +155,6 @@
       (is (.exists (io/file output-file-1)))
       (is (not (.exists (io/file (str output-path "_02.png"))))
           "Should only create files for default angles"))))
+
 
 
