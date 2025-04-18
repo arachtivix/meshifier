@@ -29,6 +29,7 @@ Available shapes:
 - tetrahedron: A regular tetrahedron with four equilateral triangular faces
 - joined-tetrahedrons: Two tetrahedrons joined by one face
 - chair: A simple chair with seat, backrest and four legs
+- spaceship: A space ship with main body, wings, cockpit, and propulsion elements
 
 ### Direct Rendering
 
@@ -72,6 +73,8 @@ lein uberjar
   - Regular tetrahedron
   - Joined tetrahedrons
   - Chair
+  - Stylized Cat
+  - Space Ship with propulsion elements
 - Render meshes using Blender from multiple angles
 - Export mesh data in JSON format
 - Point-in-tetrahedron testing
@@ -91,3 +94,4 @@ Public License, v. 2.0 are satisfied: GNU General Public License as published by
 the Free Software Foundation, either version 2 of the License, or (at your
 option) any later version, with the GNU Classpath Exception which is available
 at https://www.gnu.org/software/classpath/license.html.
+

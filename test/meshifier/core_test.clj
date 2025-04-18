@@ -1,6 +1,7 @@
 (ns meshifier.core-test
   (:require [clojure.test :refer :all]
             [meshifier.core :refer :all]
+            [meshifier.mesh-utils :refer [point-in-tetrahedron? generate-cuboid-mesh]]
             [clojure.data.json :as json]))
 
 (deftest point-in-tetrahedron-test
@@ -280,6 +281,7 @@
           "Vertices count should match after serialization/deserialization")
       (is (= (count (:faces mesh)) (count (get parsed "faces")))
           "Faces count should match after serialization/deserialization"))))
+
 
 
 
