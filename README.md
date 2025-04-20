@@ -52,6 +52,19 @@ To output the mesh data as JSON without rendering:
 lein run -
 ```
 
+### Validate Mesh Data
+
+To validate all mesh types against the JSON schema:
+
+```bash
+lein validate-meshes
+```
+
+This will:
+1. Generate all available mesh types
+2. Validate each mesh against the JSON schema
+3. Report which meshes are valid and which are invalid
+
 ### Development
 
 Run tests:
@@ -79,6 +92,7 @@ lein uberjar
 - Export mesh data in JSON format
 - Point-in-tetrahedron testing
 - Volume calculations
+- JSON schema validation for mesh data
 
 ## License
 
@@ -94,4 +108,5 @@ Public License, v. 2.0 are satisfied: GNU General Public License as published by
 the Free Software Foundation, either version 2 of the License, or (at your
 option) any later version, with the GNU Classpath Exception which is available
 at https://www.gnu.org/software/classpath/license.html.
+
 

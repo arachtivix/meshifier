@@ -8,8 +8,10 @@
   :main ^:skip-aot meshifier.core
   :target-path "target/%s"
   :resource-paths ["resources"]
+  :aliases {"validate-meshes" ["run" "-m" "meshifier.validate-meshes"]}
   :profiles {:uberjar {:aot :all
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})
+
 
 
 

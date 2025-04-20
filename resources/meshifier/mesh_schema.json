@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Mesh Data Schema",
+  "description": "Schema for validating 3D mesh data with vertices and faces",
+  "type": "object",
+  "required": ["vertices", "faces"],
+  "properties": {
+    "vertices": {
+      "type": "array",
+      "description": "Array of 3D vertex coordinates",
+      "items": {
+        "type": "array",
+        "minItems": 3,
+        "maxItems": 3,
+        "items": {
+          "type": "number"
+        }
+      }
+    },
+    "faces": {
+      "type": "array",
+      "description": "Array of faces defined by vertex indices (can be triangular or polygonal)",
+      "items": {
+        "type": "array",
+        "minItems": 3,
+        "items": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

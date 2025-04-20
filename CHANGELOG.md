@@ -2,8 +2,15 @@
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
 ## [Unreleased]
+### Added
+- JSON schema for mesh data validation
+- Mesh validation utilities in `mesh_validator.clj`
+- Command-line utility for validating all mesh types
+- Documentation for mesh data JSON schema
+
 ### Changed
-- Add a new arity to `make-widget-async` to provide a different widget shape.
+- Updated README.md with validation instructions
+- Added `validate-meshes` alias to project.clj
 
 ## [0.1.1] - 2025-04-09
 ### Changed
@@ -22,3 +29,4 @@ All notable changes to this project will be documented in this file. This change
 
 [Unreleased]: https://sourcehost.site/your-name/meshifier/compare/0.1.1...HEAD
 [0.1.1]: https://sourcehost.site/your-name/meshifier/compare/0.1.0...0.1.1
+
