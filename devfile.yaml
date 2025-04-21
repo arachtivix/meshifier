@@ -1,0 +1,28 @@
+schemaVersion: 2.0.0
+metadata:
+  name: meshifier
+  version: 1.0.0
+  displayName: Meshifier
+  description: A Clojure library for generating and rendering 3D mesh data
+components:
+  - name: dev
+    container:
+      image: public.ecr.aws/aws-mde/universal-image:latest
+      memoryLimit: 2Gi
+      mountSources: true
+commands:
+  - id: install
+    exec:
+      component: dev
+      commandLine: "apt-get update && apt-get install -y leiningen blender"
+      workingDir: ${PROJECT_SOURCE}
+  - id: build
+    exec:
+      component: dev
+      commandLine: "lein uberjar"
+      workingDir: ${PROJECT_SOURCE}
+  - id: test
+    exec:
+      component: dev
+      commandLine: "lein test && lein validate-meshes"
+      workingDir: ${PROJECT_SOURCE}
